@@ -1,5 +1,9 @@
 library(shiny)
 library(expm)
+library(plotly)
+library(ggplot2)
+library(ggplotify)
+library(graphics)
 
 
 # logifySlider javascript function
@@ -70,7 +74,7 @@ ui <- fluidPage(
     mainPanel(
 
       # Output: Histogram ----
-      plotOutput(outputId = "distPlot")
+      plotlyOutput(outputId = "distPlot")
 
     )
   )
@@ -91,7 +95,7 @@ server <- function(input, output) {
   # 1. It is "reactive" and therefore should be automatically
   #    re-executed when inputs (input$bins) change
   # 2. Its output type is a plot
-  output$distPlot <- renderPlot({
+  output$distPlot <- renderPlotly({
 
 
   # theta    = 1.0 / pop_size / 2.0;
@@ -129,8 +133,12 @@ server <- function(input, output) {
     tp     <- expm(x*generations[k])
     yyy[k] <- 1 - tp[1,1]
   }
-
-  plot(generations,yyy,ylim=c(0,1),log="x", pch=19)
+  
+  df = data.frame(x=generations, y=yyy)
+  p <- ggplot(df,aes(x=x,y=y))+geom_point()+
+    scale_x_log10()+ylim(c(0,1))
+  
+  ggplotly(p)
 
   })
 
